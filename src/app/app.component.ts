@@ -45,7 +45,7 @@ const COUNTRIES: Country[] = [
 export class AppComponent {
 
   title = 'sort-table';
-  countries = COUNTRIES;
+  countries = [...COUNTRIES];
 
   @ViewChildren(NgbdSortableHeader) headers: QueryList<NgbdSortableHeader>;
 
