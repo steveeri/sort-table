@@ -1,5 +1,6 @@
-import { Component, QueryList, ViewChildren } from '@angular/core';
+import { Component, QueryList, ViewChildren, OnInit, OnDestroy } from '@angular/core';
 import { Country, NgbdSortableHeader, SortEvent, compare } from './table-sortable-directive';
+import { BehaviorSubject } from 'rxjs';
 
 const COUNTRIES: Country[] = [
   {
@@ -36,36 +37,41 @@ const COUNTRIES: Country[] = [
   }
 ];
 
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
+
+  ngOnDestroy(): void { }
 
   title = 'sort-table';
-  countries = [...COUNTRIES];
+  countries = new BehaviorSubject<Country[]>([]);
 
   @ViewChildren(NgbdSortableHeader) headers: QueryList<NgbdSortableHeader>;
+
+  ngOnInit() {
+    this.countries.next([...COUNTRIES]);
+  }
 
   onSort({column, direction}: SortEvent) {
 
     // resetting other headers
     this.headers.forEach(header => {
-      if (header.sortable !== column) {
-        header.direction = '';
-      }
+      if (header.sortable !== column) { header.direction = ''; }
     });
 
     // sorting countries
     if (direction === '' || column === '') {
-      this.countries = COUNTRIES;
+      this.countries.next([...COUNTRIES]);
     } else {
-      this.countries = [...COUNTRIES].sort((a, b) => {
-        const res = compare(a[column], b[column]);
-        return direction === 'asc' ? res : -res;
-      });
+      this.countries.next(
+        [...COUNTRIES].sort((a, b) => {
+          const res = compare(a[column], b[column]);
+          return direction === 'asc' ? res : -res;
+        })
+      );
     }
   }
 
